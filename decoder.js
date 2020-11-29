@@ -1,6 +1,11 @@
 /* eslint no-bitwise: ["error", { "allow": ["&", "<<", ">>", "|"] }] */
 /* eslint no-plusplus: "off" */
 
+/**
+ * Decode payload
+ * @param bytes Buffer
+ * @returns Object
+ */
 module.exports = function Decoder(bytes) {
   // Decoded result
   const decoded = {};
