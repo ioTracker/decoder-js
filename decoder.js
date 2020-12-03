@@ -153,7 +153,7 @@ module.exports = function Decoder(bytes) {
   function parseBluetoothBeacons02() {
     const beaconStatus = bytes[index++];
     const beaconType = beaconStatus & 0x03;
-    const slotMatch = (beaconStatus >> 3) & 0x07;
+    const slotMatch = (beaconStatus >> 2) & 0x07;
 
     const rssiRaw = bytes[index++] & 63;
     const rssi = 27 - (rssiRaw * 2);

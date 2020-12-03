@@ -328,6 +328,9 @@ describe('Decoder', () => {
     assert.equal('0066D726F52DDFB9D9888B51A8001005', beacon0.uuid.toUpperCase());
     assert.equal('031C', beacon0.major.toUpperCase());
     assert.equal('8AF8', beacon0.minor.toUpperCase());
+
+    const payload2 = parse('1100FD8B01095712F10000030021D1793262296DDF445F65360123456789AB');
+    assert.equal(1, payload2.bluetoothInfo.beacons.length);
   });
 
   it('testBluetoothPayload02', () => {
@@ -350,6 +353,10 @@ describe('Decoder', () => {
     assert.equal(0, beacon0.slot);
     assert.equal('0001', beacon0.major.toUpperCase());
     assert.equal('0002', beacon0.minor.toUpperCase());
+
+    const payload2 = parse('11f6fd8b01090d037300a000a04105350123456789ab');
+    const beacon20 = payload2.bluetoothInfo.beacons[0];
+    assert.equal(1, beacon20.slot);
   });
   // });
 });
