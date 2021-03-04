@@ -333,6 +333,28 @@ describe('Decoder', () => {
     assert.equal(1, payload2.bluetoothInfo.beacons.length);
   });
 
+  it('testBluetoothPayload01MultipleBeacons', () => {
+    const payload = parse('1100FD830108C4123322C2B98F6F32CA404CDB99046D500EF6834D00030001D5793262296DDF445F65360123456789AB');
+
+    assert(Object.prototype.hasOwnProperty.call(payload, 'bluetoothInfo'));
+    assert.equal('success', payload.bluetoothInfo.status);
+    assert.equal(2, payload.bluetoothInfo.beacons.length);
+    assert.equal(1, payload.bluetoothInfo.addSlotInfo);
+
+    const beacon0 = payload.bluetoothInfo.beacons[0];
+    assert.equal('altbeacon', beacon0.type);
+    assert.equal(-69, beacon0.rssi);
+    assert.equal('B98F6F32CA404CDB99046D500EF6834D', beacon0.id1.toUpperCase());
+    assert.equal('0003', beacon0.id2.toUpperCase());
+    assert.equal('0001', beacon0.id3.toUpperCase());
+
+    const beacon1 = payload.bluetoothInfo.beacons[1];
+    assert.equal('eddystone', beacon1.type);
+    assert.equal(-79, beacon1.rssi);
+    assert.equal('793262296DDF445F6536', beacon1.namespace.toUpperCase());
+    assert.equal('0123456789AB', beacon1.instance.toUpperCase());
+  });
+
   it('testBluetoothPayload02', () => {
     /*
        * 41 is de status, de 4 staat voor result + slot

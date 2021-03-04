@@ -122,27 +122,27 @@ module.exports = function Decoder(bytes) {
           namespace: substring(bytes, index, 10),
           instance: substring(bytes, index + 10, 6),
         };
-        index += 6;
+        index += 16;
         return beacon;
       case 0x02:
         beacon = {
           type: 'altbeacon',
           rssi,
           id1: substring(bytes, index, 16),
-          id2: substring(bytes, index + 18, 2),
-          id3: substring(bytes, index + 20, 2),
+          id2: substring(bytes, index + 16, 2),
+          id3: substring(bytes, index + 18, 2),
         };
-        index += 6;
+        index += 20;
         return beacon;
       case 0x03:
         beacon = {
           type: 'fullbeacon',
           rssi,
           id1: substring(bytes, index, 16),
-          id2: substring(bytes, index + 18, 2),
-          id3: substring(bytes, index + 20, 2),
+          id2: substring(bytes, index + 16, 2),
+          id3: substring(bytes, index + 18, 2),
         };
-        index += 6;
+        index += 20;
         return beacon;
       default:
         throw new Error('Invalid beacon type');
