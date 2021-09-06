@@ -12,3 +12,6 @@ takes a `Buffer` as it's input and returns an `Object` containing the decoded pa
 
 ## Testing
 Make sure you also have all dev-dependencies installed, then run `npm test`
+
+## Commandline testing
+Execute `node test.js <payload>`, e.g., `node test.js 17ecfb8b010b1100001d804000430031520f9f680032520b45090034520f9722` to see the parsed result commandline
