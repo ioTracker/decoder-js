@@ -187,7 +187,7 @@ module.exports = function Decoder(bytes) {
           id2: substring(bytes, index, 2),
           id3: substring(bytes, index + 2, 2),
         };
-        index += 6;
+        index += 4;
         return beacon;
       case 0x03:
         beacon = {
