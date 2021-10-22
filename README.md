@@ -6,6 +6,9 @@ payload that is sent by the trackers.
 *Note*: This is not the actual decoder that is run on the ioTracker backend; so
 payloads may differ from the results you receive from the ioTracker API.
 
+## TTN compatibility
+For TTN, `decoder_ttn.js` is required to be used instead of `decoder.js`. The reason is that TTN requires an older javascript version.` 
+
 ## Usage
 The `Decoder` function in the `decoder.js` is a self contained function, that
 takes a `Buffer` as it's input and returns an `Object` containing the decoded payload.
