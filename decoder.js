@@ -223,6 +223,8 @@ module.exports = function Decoder(bytes) {
       containsAccelerometerCurrent: !!(sensorContent & 4),
       containsAccelerometerMax: !!(sensorContent & 8),
       containsWifiPositioningData: !!(sensorContent & 16),
+      buttonEventInfo: !!(sensorContent & 32),
+      containsExternalSensors: !!(sensorContent & 64),
       containsBluetoothData: false,
     };
 
@@ -230,6 +232,8 @@ module.exports = function Decoder(bytes) {
     if (hasSecondSensorContent) {
       const sensorContent2 = bytes[index++];
       decoded.sensorContent.containsBluetoothData = !!(sensorContent2 & 1);
+      decoded.sensorContent.containsRelativeHumidity = !!(sensorContent2 & 2);
+      decoded.sensorContent.containsAirPressure = !!(sensorContent2 & 4);
     }
 
     if (decoded.sensorContent.containsTemperature) {
@@ -297,6 +301,26 @@ module.exports = function Decoder(bytes) {
         });
       }
     }
+
+    if (decoded.sensorContent.containsExternalSensors) {
+      const type = bytes[index++];
+      switch(type) {
+        case 0x0A:
+          decoded.externalSensor = {
+            type: 'battery',
+            batteryA: toUnsignedShort(bytes[index++], bytes[index++]),
+            batteryB: toUnsignedShort(bytes[index++], bytes[index++]),
+          };
+          break;
+        case 0x65:
+          decoded.externalSensor = {
+            type: 'detectSwitch',
+            value: bytes[index++]
+          };
+          break;
+      }
+    }
+
     if (decoded.sensorContent.containsBluetoothData) {
       const bluetoothInfo = bytes[index++];
       const numBeacons = (bluetoothInfo & 7);
@@ -338,6 +362,15 @@ module.exports = function Decoder(bytes) {
             throw new Error('Invalid addSlotInfo type');
         }
       }
+    }
+
+    if (decoded.sensorContent.containsRelativeHumidity) {
+      decoded.relativeHumidity = toUnsignedShort(bytes[index++], bytes[index++]) / 100;
+    }
+
+    if (decoded.sensorContent.containsAirPressure) {
+      // uint24
+      decoded.airPressure = (bytes[index++] << 16) + (bytes[index++] << 8) + bytes[index++];
     }
   }
   if (decoded.containsGps) {

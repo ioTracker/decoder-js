@@ -380,5 +380,35 @@ describe('Decoder', () => {
     const beacon20 = payload2.bluetoothInfo.beacons[0];
     assert.equal(1, beacon20.slot);
   });
+
+  it('testHumidity', () =>
+  {
+    const payload = parse('1000DB CB02 0925 25A6 00800090 0A0FC70FBA 17C7');
+
+    assert(Object.prototype.hasOwnProperty.call(payload, 'externalSensor'));
+    assert.equal('battery', payload.externalSensor.type);
+    assert.equal(0x0FC7, payload.externalSensor.batteryA);
+    assert.equal(0x0FBA, payload.externalSensor.batteryB);
+
+    assert(Object.prototype.hasOwnProperty.call(payload, 'relativeHumidity'));
+    assert.equal(60.87, payload.relativeHumidity);
+  });
+
+  it('testAirPressure', () =>
+  {
+    const payload = parse('1100DBC30608F614BE0A0FC20FBB18A10186C2');
+
+    assert(Object.prototype.hasOwnProperty.call(payload, 'airPressure'));
+    assert.equal(100034, payload.airPressure);
+  });
+
+  it('testDetectSwitch', () =>
+  {
+    const payload = parse('1000FDC1010908650100');
+
+    assert(Object.prototype.hasOwnProperty.call(payload, 'externalSensor'));
+    assert.equal('detectSwitch', payload.externalSensor.type);
+    assert.equal(0x01, payload.externalSensor.value);
+  });
   // });
 });
