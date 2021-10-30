@@ -9,7 +9,7 @@
  * @param bytes Buffer
  * @returns Object
  */
-function Decoder(bytes) {
+module.exports = function Decoder(bytes) {
   // Decoded result
   var decoded = {}; // Pointer/index within the byte stream
 
@@ -51,7 +51,7 @@ function Decoder(bytes) {
     var beaconType = beaconStatus & 0x03;
     var rssiRaw = beaconStatus >> 2;
     var rssi = 27 - rssiRaw * 2;
-    var beacon;
+    var beacon = void 0;
 
     switch (beaconType) {
       case 0x00:
@@ -107,7 +107,7 @@ function Decoder(bytes) {
     var beaconType = beaconStatus & 0x03;
     var rssiRaw = beaconStatus >> 2;
     var rssi = 27 - rssiRaw * 2;
-    var beacon;
+    var beacon = void 0;
 
     switch (beaconType) {
       case 0x00:
@@ -165,7 +165,7 @@ function Decoder(bytes) {
     var slotMatch = beaconStatus >> 2 & 0x07;
     var rssiRaw = bytes[index++] & 63;
     var rssi = 27 - rssiRaw * 2;
-    var beacon;
+    var beacon = void 0;
 
     switch (beaconType) {
       case 0x00:
@@ -235,6 +235,8 @@ function Decoder(bytes) {
       containsAccelerometerCurrent: !!(sensorContent & 4),
       containsAccelerometerMax: !!(sensorContent & 8),
       containsWifiPositioningData: !!(sensorContent & 16),
+      buttonEventInfo: !!(sensorContent & 32),
+      containsExternalSensors: !!(sensorContent & 64),
       containsBluetoothData: false
     };
     var hasSecondSensorContent = !!(sensorContent & 128);
@@ -242,6 +244,8 @@ function Decoder(bytes) {
     if (hasSecondSensorContent) {
       var sensorContent2 = bytes[index++];
       decoded.sensorContent.containsBluetoothData = !!(sensorContent2 & 1);
+      decoded.sensorContent.containsRelativeHumidity = !!(sensorContent2 & 2);
+      decoded.sensorContent.containsAirPressure = !!(sensorContent2 & 4);
     }
 
     if (decoded.sensorContent.containsTemperature) {
@@ -273,7 +277,7 @@ function Decoder(bytes) {
 
       var wifiStatus = ((wifiInfo & 8) >> 2) + ((wifiInfo & 16) >> 3);
       var containsSignalStrength = wifiInfo & 32;
-      var wifiStatusDescription;
+      var wifiStatusDescription = void 0;
 
       switch (wifiStatus) {
         case 0:
@@ -289,7 +293,7 @@ function Decoder(bytes) {
           break;
 
         default:
-          wifiStatusDescription = "unknown (".concat(wifiStatus, ")");
+          wifiStatusDescription = "unknown (" + wifiStatus + ")";
       }
 
       decoded.wifiInfo = {
@@ -315,12 +319,33 @@ function Decoder(bytes) {
       }
     }
 
+    if (decoded.sensorContent.containsExternalSensors) {
+      var type = bytes[index++];
+
+      switch (type) {
+        case 0x0A:
+          decoded.externalSensor = {
+            type: 'battery',
+            batteryA: toUnsignedShort(bytes[index++], bytes[index++]),
+            batteryB: toUnsignedShort(bytes[index++], bytes[index++])
+          };
+          break;
+
+        case 0x65:
+          decoded.externalSensor = {
+            type: 'detectSwitch',
+            value: bytes[index++]
+          };
+          break;
+      }
+    }
+
     if (decoded.sensorContent.containsBluetoothData) {
       var bluetoothInfo = bytes[index++];
       var numBeacons = bluetoothInfo & 7;
       var bluetoothStatus = bluetoothInfo >> 3 & 0x03;
       var addSlotInfo = bluetoothInfo >> 5 & 0x03;
-      var bluetoothStatusDescription;
+      var bluetoothStatusDescription = void 0;
 
       switch (bluetoothStatus) {
         case 0:
@@ -336,7 +361,7 @@ function Decoder(bytes) {
           break;
 
         default:
-          bluetoothStatusDescription = "unknown (".concat(bluetoothStatus, ")");
+          bluetoothStatusDescription = "unknown (" + bluetoothStatus + ")";
       }
 
       decoded.bluetoothInfo = {
@@ -364,6 +389,15 @@ function Decoder(bytes) {
             throw new Error('Invalid addSlotInfo type');
         }
       }
+    }
+
+    if (decoded.sensorContent.containsRelativeHumidity) {
+      decoded.relativeHumidity = toUnsignedShort(bytes[index++], bytes[index++]) / 100;
+    }
+
+    if (decoded.sensorContent.containsAirPressure) {
+      // uint24
+      decoded.airPressure = (bytes[index++] << 16) + (bytes[index++] << 8) + bytes[index++];
     }
   }
 
