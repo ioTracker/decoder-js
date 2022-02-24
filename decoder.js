@@ -234,6 +234,7 @@ module.exports = function Decoder(bytes) {
       decoded.sensorContent.containsBluetoothData = !!(sensorContent2 & 1);
       decoded.sensorContent.containsRelativeHumidity = !!(sensorContent2 & 2);
       decoded.sensorContent.containsAirPressure = !!(sensorContent2 & 4);
+      decoded.sensorContent.containsManDown = !!(sensorContent2 & 8);
     }
 
     if (decoded.sensorContent.containsTemperature) {
@@ -371,6 +372,35 @@ module.exports = function Decoder(bytes) {
     if (decoded.sensorContent.containsAirPressure) {
       // uint24
       decoded.airPressure = (bytes[index++] << 16) + (bytes[index++] << 8) + bytes[index++];
+    }
+
+    if (decoded.sensorContent.containsManDown) {
+      let manDownData = (bytes[index++]);
+      let manDownState = (manDownData & 0x0f)
+      let manDownStateLabel;
+      switch(manDownState) {
+        case 0x00:
+          manDownStateLabel = 'ok';
+          break;
+        case 0x01:
+          manDownStateLabel = 'sleeping';
+          break;
+        case 0x02:
+          manDownStateLabel = 'preAlarm';
+          break;
+        case 0x03:
+          manDownStateLabel = 'alarm';
+          break;
+        default:
+          manDownStateLabel = 'RFU ('+manDownState+')';
+          break;
+      }
+      decoded.manDown = {
+        code: manDownState,
+        state: manDownStateLabel,
+        positionAlarm: !!(manDownData & 0x10),
+        movementAlarm: !!(manDownData & 0x20)
+      }
     }
   }
   if (decoded.containsGps) {

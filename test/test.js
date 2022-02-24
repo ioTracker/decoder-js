@@ -311,10 +311,10 @@ describe('Decoder', () => {
 
   it('testBluetoothPayload01', () => {
     /**
-       * 21  is de status, die 2 is nieuw zeg maar, die geeft aan dat er een full data volgt
-       * C8 is de result status van beacon 1, op dezelfde manier als die voor de 6B grote data.
-       * daarna volgt de volle UUID, (16Byte), dan de major dan de minor
-       */
+     * 21  is de status, die 2 is nieuw zeg maar, die geeft aan dat er een full data volgt
+     * C8 is de result status van beacon 1, op dezelfde manier als die voor de 6B grote data.
+     * daarna volgt de volle UUID, (16Byte), dan de major dan de minor
+     */
     const payload = parse('1100FD8301093100A2 21 C8 0066D726F52DDFB9D9888B51A8001005031C8AF8');
 
     assert(Object.prototype.hasOwnProperty.call(payload, 'bluetoothInfo'));
@@ -381,8 +381,7 @@ describe('Decoder', () => {
     assert.equal(1, beacon20.slot);
   });
 
-  it('testHumidity', () =>
-  {
+  it('testHumidity', () => {
     const payload = parse('1000DB CB02 0925 25A6 00800090 0A0FC70FBA 17C7');
 
     assert(Object.prototype.hasOwnProperty.call(payload, 'externalSensor'));
@@ -394,21 +393,40 @@ describe('Decoder', () => {
     assert.equal(60.87, payload.relativeHumidity);
   });
 
-  it('testAirPressure', () =>
-  {
+  it('testAirPressure', () => {
     const payload = parse('1100DBC30608F614BE0A0FC20FBB18A10186C2');
 
     assert(Object.prototype.hasOwnProperty.call(payload, 'airPressure'));
     assert.equal(100034, payload.airPressure);
   });
 
-  it('testDetectSwitch', () =>
-  {
+  it('testDetectSwitch', () => {
     const payload = parse('1000FDC1010908650100');
 
     assert(Object.prototype.hasOwnProperty.call(payload, 'externalSensor'));
     assert.equal('detectSwitch', payload.externalSensor.type);
     assert.equal(0x01, payload.externalSensor.value);
   });
+
+  it('testManDown1', () => {
+    const payload = parse('1400FD8708085E0316002003D000A000');
+    assert(Object.prototype.hasOwnProperty.call(payload, 'manDown'));
+    assert.equal('ok', payload.manDown.state);
+    assert.equal(false, payload.manDown.positionAlarm);
+    assert.equal(false, payload.manDown.movementAlarm);
+  });
+
+  it('testManDown2', () => {
+    const payload = parse('1700FD870809920316004003C0004001');
+    assert(Object.prototype.hasOwnProperty.call(payload, 'manDown'));
+    assert.equal('sleeping', payload.manDown.state);
+  });
+
+  it('testManDown3', () => {
+    const payload = parse('1400FD870808670316002003E000A023');
+    assert(Object.prototype.hasOwnProperty.call(payload, 'manDown'));
+    assert.equal(false, payload.manDown.positionAlarm);
+    assert.equal(true, payload.manDown.movementAlarm);
+  })
   // });
 });
