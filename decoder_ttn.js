@@ -1,17 +1,11 @@
 "use strict";
 
 /* eslint no-bitwise: ["error", { "allow": ["&", "<<", ">>", "|"] }] */
-
 /* eslint no-plusplus: "off" */
 
-/**
- * Decode payload
- * @param bytes Buffer
- * @returns Object
- */
 module.exports = function Decoder(bytes) {
-  // Decoded result
-  var decoded = {}; // Pointer/index within the byte stream
+
+  var decoded = {};
 
   var index = 0;
 
@@ -24,7 +18,7 @@ module.exports = function Decoder(bytes) {
     var x = (byte1 & 0xFF) << 8 | byte2 & 0xFF;
 
     if (sign) {
-      return 0xFFFF0000 | x; // fill in most significant bits with 1's
+      return 0xFFFF0000 | x;
     }
 
     return x;
@@ -39,13 +33,11 @@ module.exports = function Decoder(bytes) {
   }
 
   function substring(source, offset, length) {
-    // let buffer = Buffer.from(bytes, offset, length);
+
     var buffer = Buffer.alloc(length);
     source.copy(buffer, 0, offset, offset + length);
     return buffer.toString('hex');
-  } // parser for slotInfo 0x00
-
-
+  }
   function parseBluetoothBeacons00() {
     var beaconStatus = bytes[index++];
     var beaconType = beaconStatus & 0x03;
@@ -97,11 +89,9 @@ module.exports = function Decoder(bytes) {
         return beacon;
 
       default:
-        throw new Error('Invalid beacon type');
+        return null;
     }
-  } // parser for slotInfo 0x01
-
-
+  }
   function parseBluetoothBeacons01() {
     var beaconStatus = bytes[index++];
     var beaconType = beaconStatus & 0x03;
@@ -154,11 +144,9 @@ module.exports = function Decoder(bytes) {
         return beacon;
 
       default:
-        throw new Error('Invalid beacon type');
+        return null;
     }
-  } // parser for slotInfo 0x02
-
-
+  }
   function parseBluetoothBeacons02() {
     var beaconStatus = bytes[index++];
     var beaconType = beaconStatus & 0x03;
@@ -212,10 +200,9 @@ module.exports = function Decoder(bytes) {
         return beacon;
 
       default:
-        throw new Error('Invalid beacon type');
+        return null;
     }
-  } // Read header byte
-
+  }
 
   var headerByte = bytes[index++];
   decoded.uplinkReasonButton = !!(headerByte & 1);
@@ -273,7 +260,7 @@ module.exports = function Decoder(bytes) {
 
     if (decoded.sensorContent.containsWifiPositioningData) {
       var wifiInfo = bytes[index++];
-      var numAccessPoints = wifiInfo & 7; // const wifiStatus = (wifiInfo >> 3) & 0x03;
+      var numAccessPoints = wifiInfo & 7;
 
       var wifiStatus = ((wifiInfo & 8) >> 2) + ((wifiInfo & 16) >> 3);
       var containsSignalStrength = wifiInfo & 32;
@@ -307,7 +294,7 @@ module.exports = function Decoder(bytes) {
         var signalStrength = void 0;
 
         if (containsSignalStrength) {
-          signalStrength = toSignedChar(bytes[index++]); // to signed
+          signalStrength = toSignedChar(bytes[index++]);
         } else {
           signalStrength = null;
         }
@@ -371,23 +358,31 @@ module.exports = function Decoder(bytes) {
         beacons: []
       };
 
+
       for (var _i = 0; _i < numBeacons; _i++) {
+        var beacon;
         switch (addSlotInfo) {
           case 0x00:
-            decoded.bluetoothInfo.beacons.push(parseBluetoothBeacons00());
+            beacon = parseBluetoothBeacons00();
             break;
 
           case 0x01:
-            decoded.bluetoothInfo.beacons.push(parseBluetoothBeacons01());
+            beacon = parseBluetoothBeacons01();
             break;
 
           case 0x02:
-            decoded.bluetoothInfo.beacons.push(parseBluetoothBeacons02());
+            beacon = parseBluetoothBeacons02();
             break;
 
           default:
-            throw new Error('Invalid addSlotInfo type');
+            return {errors: ['Invalid addSlotInfo type']};
+
         }
+        if (beacon === null) {
+          return {errors: ['Invalid beacon type']};
+        }
+
+        decoded.bluetoothInfo.beacons.push(beacon);
       }
     }
 
@@ -396,7 +391,7 @@ module.exports = function Decoder(bytes) {
     }
 
     if (decoded.sensorContent.containsAirPressure) {
-      // uint24
+
       decoded.airPressure = (bytes[index++] << 16) + (bytes[index++] << 8) + bytes[index++];
     }
   }
