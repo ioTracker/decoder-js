@@ -429,11 +429,10 @@ module.exports = function Decoder(bytes) {
         manDownStateLabel = 'alarm';
         break;
       default:
-        manDownStateLabel = 'RFU ('+manDownState+')';
+        manDownStateLabel = manDownState+'';
         break;
     }
     decoded.manDown = {
-      code: manDownState,
       state: manDownStateLabel,
       positionAlarm: !!(manDownData & 0x10),
       movementAlarm: !!(manDownData & 0x20)
