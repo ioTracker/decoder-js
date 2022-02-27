@@ -3,7 +3,7 @@
 /* eslint no-bitwise: ["error", { "allow": ["&", "<<", ">>", "|"] }] */
 /* eslint no-plusplus: "off" */
 
-module.exports = function Decoder(bytes) {
+function Decoder(bytes) {
 
   var decoded = {};
 
