@@ -10,6 +10,7 @@ function parse(hex) {
 }
 
 describe('Decoder', () => {
+
   // describe('#header', function() {
   it('testDefaultMessage', () => {
     const payload = parse('0000FE');
@@ -427,6 +428,21 @@ describe('Decoder', () => {
     assert(Object.prototype.hasOwnProperty.call(payload, 'manDown'));
     assert.equal(false, payload.manDown.positionAlarm);
     assert.equal(true, payload.manDown.movementAlarm);
+  })
+
+  it('testGps', () => {
+    const payload = parse('1903fd83080a47358601031eaac2bf03994faf0513131d00000000080a');
+    assert(Object.prototype.hasOwnProperty.call(payload, 'gps'));
+    assert.equal(3, payload.gps.navStat);
+    assert.equal(51.4507455, payload.gps.latitude);
+    assert.equal(6.0379055, payload.gps.longitude);
+    assert.equal(129.9, payload.gps.altRef);
+    assert.equal(19, payload.gps.hAcc);
+    assert.equal(29, payload.gps.vAcc);
+    assert.equal(0, payload.gps.sog);
+    assert.equal(0, payload.gps.cog);
+    assert.equal(0.8, payload.gps.hdop);
+    assert.equal(10, payload.gps.numSvs);
   })
   // });
 });
