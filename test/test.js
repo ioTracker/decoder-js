@@ -6,20 +6,17 @@ describe('Decoder', () => {
 
   // Run the complete test suite on both the default (ES6) as the TTN parser
   let runs = [
-    {decoderName: 'default', file: '../decoder'},
-    {decoderName: 'ttn', file: '../decoder_ttn'}
+    {decoderName: 'default', decoder: require('../decoder') },
+    {decoderName: 'ttn', decoder: require('../decoder_ttn')}
   ]
 
   runs.forEach(function (run) {
-
-    // Load decoder
-    let decoder = require(run.file);
 
     // Define (shortcut) parse function, to be used in all tests
     function parse(hex) {
       const cleanedHex = hex.replace(/\s/g, '');
       const buffer = Buffer.from(cleanedHex, 'hex');
-      return decoder(buffer);
+      return run.decoder(buffer);
     }
 
     describe('#' + run.decoderName, function () {

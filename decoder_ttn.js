@@ -453,3 +453,8 @@ function Decoder(bytes) {
 
   return decoded;
 };
+
+// Export function (for implementations and for testing)
+if (typeof module !== 'undefined' && module.exports != null) {
+  module.exports = Decoder;
+}
