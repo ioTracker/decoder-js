@@ -398,7 +398,7 @@ function Decoder(bytes) {
 
     if (decoded.sensorContent.containsManDown) {
       var manDownData = (bytes[index++]);
-      var manDownState = (manDownData & 0x0f)
+      var manDownState = (manDownData & 0x0f);
       var manDownStateLabel;
       switch(manDownState) {
         case 0x00:
@@ -421,7 +421,7 @@ function Decoder(bytes) {
         state: manDownStateLabel,
         positionAlarm: !!(manDownData & 0x10),
         movementAlarm: !!(manDownData & 0x20)
-      }
+      };
     }
 
   }
@@ -433,13 +433,13 @@ function Decoder(bytes) {
       bytes[index++],
       bytes[index++],
       bytes[index++],
-      bytes[index++],
+      bytes[index++]
     ) / 10000000;
     decoded.gps.longitude = toSignedInteger(
       bytes[index++],
       bytes[index++],
       bytes[index++],
-      bytes[index++],
+      bytes[index++]
     ) / 10000000;
     decoded.gps.altRef = toUnsignedShort(bytes[index++], bytes[index++]) / 10;
     decoded.gps.hAcc = bytes[index++];
@@ -449,7 +449,6 @@ function Decoder(bytes) {
     decoded.gps.hdop = bytes[index++] / 10;
     decoded.gps.numSvs = bytes[index++];
   }
-
 
   return decoded;
 }
