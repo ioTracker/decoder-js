@@ -29,7 +29,7 @@ function Decoder(bytes) {
   }
 
   function toSignedInteger(byte1, byte2, byte3, byte4) {
-    return (byte1 & 0x80 ? -1 : 1) * ((byte1 & 0x7F) << 24) + (byte2 << 16) + (byte3 << 8) + byte4;
+    return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
   }
 
   function bytesToHexString(bytes){

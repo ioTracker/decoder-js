@@ -452,6 +452,14 @@ describe('Decoder', () => {
         assert.equal(0.8, payload.gps.hdop);
         assert.equal(10, payload.gps.numSvs);
       })
+
+      it('testGps2', () => {
+        const payload = parse('197bfd0b09ee845e0b802a800317867cedffc6e7c90673130700020bd22b07');
+        assert(Object.prototype.hasOwnProperty.call(payload, 'gps'));
+        assert.equal(39.4689773, payload.gps.latitude);
+        assert.equal(-0.3741751, payload.gps.longitude);
+      })
+
     });
   })
 
