@@ -253,6 +253,7 @@ function Decoder(bytes) {
       decoded.sensorContent.containsRelativeHumidity = !!(sensorContent2 & 2);
       decoded.sensorContent.containsAirPressure = !!(sensorContent2 & 4);
       decoded.sensorContent.containsManDown = !!(sensorContent2 & 8);
+      decoded.sensorContent.containsTilt = !!(sensorContent2 & 16);
     }
 
     if (decoded.sensorContent.containsTemperature) {
@@ -440,6 +441,15 @@ function Decoder(bytes) {
         state: manDownStateLabel,
         positionAlarm: !!(manDownData & 0x10),
         movementAlarm: !!(manDownData & 0x20)
+      };
+    }
+
+    if (decoded.sensorContent.containsTilt) {
+      decoded.tilt = {
+        currentTilt: toUnsignedShort(bytes[index++], bytes[index++]) / 100,
+        currentDirection: Math.round(bytes[index++] * (360/255)),
+        maximumTiltHistory: toUnsignedShort(bytes[index++], bytes[index++]) / 100,
+        DirectionHistory: Math.round(bytes[index++] * (360/255)),
       };
     }
 
