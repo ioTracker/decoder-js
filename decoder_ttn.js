@@ -338,7 +338,14 @@ function Decoder(bytes) {
             batteryB: toUnsignedShort(bytes[index++], bytes[index++])
           };
           break;
-
+          
+        case 0x64:
+          decoded.externalSensor = {
+            type: 'externalTemperature',
+            value: toSignedShort(bytes[index++], bytes[index++]) / 100
+          };
+          break;
+          
         case 0x65:
           decoded.externalSensor = {
             type: 'detectSwitch',
