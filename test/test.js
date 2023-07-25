@@ -452,7 +452,7 @@ describe('Decoder', () => {
         assert.equal(0.8, payload.gps.hdop);
         assert.equal(10, payload.gps.numSvs);
       })
-      
+
       it('testGps2', () => {
         const payload = parse('197bfd0b09ee845e0b802a800317867cedffc6e7c90673130700020bd22b07');
         assert(Object.prototype.hasOwnProperty.call(payload, 'gps'));
@@ -467,6 +467,28 @@ describe('Decoder', () => {
         assert.equal(44, Math.floor(payload.tilt.currentDirection));
         assert.equal(44.23, payload.tilt.maximumTiltHistory);
         assert.equal(270, Math.floor(payload.tilt.DirectionHistory));
+      })
+
+      it('testButtonSingle', () => {
+        const payload = parse('1121fd0800000000');
+        assert.equal(true, payload.uplinkReasonButton);
+        assert.equal('single', payload.buttonClickReason);
+      })
+
+      it('testButtonLong', () => {
+        const payload = parse('1421fd2800000000');
+        assert.equal(true, payload.uplinkReasonButton);
+        assert(Object.prototype.hasOwnProperty.call(payload, 'sensorContent'));
+        assert.equal(true, payload.sensorContent.buttonEventInfo);
+        assert.equal('long', payload.buttonClickReason);
+      })
+
+      it('testButtonDouble', () => {
+        const payload = parse('1521fd2800000000');
+        assert.equal(true, payload.uplinkReasonButton);
+        assert(Object.prototype.hasOwnProperty.call(payload, 'sensorContent'));
+        assert.equal(true, payload.sensorContent.buttonEventInfo);
+        assert.equal('double', payload.buttonClickReason);
       })
     });
   })

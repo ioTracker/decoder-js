@@ -203,6 +203,10 @@ module.exports = function Decoder(bytes) {
   // Read header byte
   const headerByte = bytes[index++];
   decoded.uplinkReasonButton = !!(headerByte & 1);
+  if (decoded.uplinkReasonButton) {
+    // Also set the reason (this can be overridden below, based on sensor content)
+    decoded.buttonClickReason = 'single';
+  }
   decoded.uplinkReasonMovement = !!(headerByte & 2);
   decoded.uplinkReasonGpio = !!(headerByte & 4);
   decoded.containsGps = !!(headerByte & 8);
@@ -223,6 +227,19 @@ module.exports = function Decoder(bytes) {
       containsExternalSensors: !!(sensorContent & 64),
       containsBluetoothData: false,
     };
+
+    const buttonHeader = decoded.uplinkReasonButton; // b0
+    const buttonEvent = decoded.sensorContent.buttonEventInfo; // b3
+    if (!buttonEvent && !buttonHeader) {
+      decoded.buttonClickReason = 'none';
+    } else if (!buttonEvent && buttonHeader) {
+      decoded.buttonClickReason = 'single';
+    } else if (buttonEvent && !buttonHeader) {
+      decoded.buttonClickReason = 'long';
+      decoded.uplinkReasonButton = true; // Set the uplink reason true, because the button was pressed.
+    } else if (buttonEvent && buttonHeader) {
+      decoded.buttonClickReason = 'double';
+    }
 
     const hasSecondSensorContent = !!(sensorContent & 128);
     if (hasSecondSensorContent) {
@@ -310,14 +327,14 @@ module.exports = function Decoder(bytes) {
             batteryB: toUnsignedShort(bytes[index++], bytes[index++]),
           };
           break;
-          
+
         case 0x64:
           decoded.externalSensor = {
             type: 'externalTemperature',
             value: toSignedShort(bytes[index++], bytes[index++]) / 100
           };
-          break;   
-          
+          break;
+
         case 0x65:
           decoded.externalSensor = {
             type: 'detectSwitch',
