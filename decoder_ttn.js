@@ -234,7 +234,7 @@ function Decoder(bytes) {
   decoded.containsGps = !!(headerByte & 8);
   decoded.containsOnboardSensors = !!(headerByte & 16);
   decoded.containsSpecial = !!(headerByte & 32);
-  decoded.crc = bytes[index++];
+  decoded.crc = bytes[index++].toString(16);
   decoded.batteryLevel = bytes[index++];
 
   if (decoded.containsOnboardSensors) {
