@@ -490,6 +490,34 @@ describe('Decoder', () => {
         assert.equal(true, payload.sensorContent.buttonEventInfo);
         assert.equal('double', payload.buttonClickReason);
       })
+      it('testRetransmitCnt', () => {
+        const payload = parse('1100FD802101E0A0750001000203');
+        assert(Object.prototype.hasOwnProperty.call(payload, 'sensorContent'));
+        assert.equal(true, payload.sensorContent.containsRetransmitCnt);
+        assert.equal(true, payload.sensorContent.containsBluetoothData);
+        assert.equal(false, payload.sensorContent.buttonEventInfo);
+        assert.equal(3, payload.retransmitCnt);
+        assert(Object.prototype.hasOwnProperty.call(payload, 'bluetoothInfo'));
+        assert.equal('success', payload.bluetoothInfo.status);
+        assert.equal(0, payload.bluetoothInfo.addSlotInfo);
+        assert.equal(1, payload.bluetoothInfo.beacons.length);
+      });
+
+      it('iobuttonStatus', () => {
+        const payload = parse('1100FCC001661400');
+        assert(Object.prototype.hasOwnProperty.call(payload, 'sensorContent'));
+        assert.equal(false, payload.sensorContent.containsRetransmitCnt);
+        assert.equal(true, payload.sensorContent.containsExternalSensors);
+        assert.equal(true, payload.sensorContent.containsBluetoothData);
+        assert.equal(false, payload.sensorContent.buttonEventInfo);
+        assert(Object.prototype.hasOwnProperty.call(payload, 'bluetoothInfo'));
+        assert.equal('success', payload.bluetoothInfo.status);
+        assert.equal(0, payload.bluetoothInfo.addSlotInfo);
+        assert.equal(0, payload.bluetoothInfo.beacons.length);
+        assert.equal("buttonState", payload.externalSensor.type);
+        assert.equal("Calling", payload.externalSensor.state);
+        assert.equal("4", payload.externalSensor.clickCnt);
+      });
     });
   })
 

@@ -33,11 +33,29 @@ module.exports = function Decoder(bytes) {
     return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
   }
 
+  function bytesToHexString(bytes){
+    if (!bytes){
+      return null;
+    }
+    bytes = new Uint8Array(bytes);
+    var hexBytes = [];
+
+    for (var i = 0; i < bytes.length; ++i) {
+      var byteString = bytes[i].toString(16);
+      if (byteString.length < 2){
+        byteString = "0" + byteString;
+      }
+      hexBytes.push(byteString);
+    }
+    return hexBytes.join("");
+  }
+
   function substring(source, offset, length) {
-    // let buffer = Buffer.from(bytes, offset, length);
-    const buffer = Buffer.alloc(length);
-    source.copy(buffer, 0, offset, offset + length);
-    return buffer.toString('hex');
+    const buffer = new Uint8Array(length);
+    for(var i = 0; i < length; i++) {
+      buffer[i] = source[offset+i];
+    }
+    return bytesToHexString(buffer);
   }
 
   // parser for slotInfo 0x00
@@ -215,6 +233,7 @@ module.exports = function Decoder(bytes) {
 
   decoded.crc = bytes[index++];
   decoded.batteryLevel = bytes[index++];
+
   if (decoded.containsOnboardSensors) {
     const sensorContent = bytes[index++];
     decoded.sensorContent = {
@@ -242,6 +261,7 @@ module.exports = function Decoder(bytes) {
     }
 
     const hasSecondSensorContent = !!(sensorContent & 128);
+
     if (hasSecondSensorContent) {
       const sensorContent2 = bytes[index++];
       decoded.sensorContent.containsBluetoothData = !!(sensorContent2 & 1);
@@ -249,11 +269,13 @@ module.exports = function Decoder(bytes) {
       decoded.sensorContent.containsAirPressure = !!(sensorContent2 & 4);
       decoded.sensorContent.containsManDown = !!(sensorContent2 & 8);
       decoded.sensorContent.containsTilt = !!(sensorContent2 & 16);
+      decoded.sensorContent.containsRetransmitCnt = !!(sensorContent2 & 32);
     }
 
     if (decoded.sensorContent.containsTemperature) {
       decoded.temperature = toSignedShort(bytes[index++], bytes[index++]) / 100;
     }
+
     if (decoded.sensorContent.containsLight) {
       const value = (bytes[index++] << 8) + bytes[index++];
       const exponent = (value >> 12) & 0xFF;
@@ -266,10 +288,12 @@ module.exports = function Decoder(bytes) {
         z: toSignedShort(bytes[index++], bytes[index++]) / 1000,
       };
     }
+
     if (decoded.sensorContent.containsAccelerometerMax) {
       decoded.maxAccelerationNew = toSignedShort(bytes[index++], bytes[index++]) / 1000;
       decoded.maxAccelerationHistory = toSignedShort(bytes[index++], bytes[index++]) / 1000;
     }
+
     if (decoded.sensorContent.containsWifiPositioningData) {
       const wifiInfo = bytes[index++];
       const numAccessPoints = (wifiInfo & 7);
@@ -277,24 +301,30 @@ module.exports = function Decoder(bytes) {
       const wifiStatus = ((wifiInfo & 8) >> 2) + ((wifiInfo & 16) >> 3);
       const containsSignalStrength = wifiInfo & 32;
       let wifiStatusDescription;
+
       switch (wifiStatus) {
         case 0:
           wifiStatusDescription = 'success';
           break;
+
         case 1:
           wifiStatusDescription = 'failed';
           break;
+
         case 2:
           wifiStatusDescription = 'no_access_points';
           break;
+
         default:
           wifiStatusDescription = `unknown (${wifiStatus})`;
       }
+
       decoded.wifiInfo = {
         status: wifiStatusDescription,
         statusCode: wifiStatus,
         accessPoints: [],
       };
+
       for (let i = 0; i < numAccessPoints; i++) {
         const macAddress = [
           bytes[index++].toString(16),
@@ -305,11 +335,13 @@ module.exports = function Decoder(bytes) {
           bytes[index++].toString(16),
         ];
         let signalStrength;
+
         if (containsSignalStrength) {
           signalStrength = toSignedChar(bytes[index++]); // to signed
         } else {
           signalStrength = null;
         }
+
         decoded.wifiInfo.accessPoints.push({
           macAddress: macAddress.join(':'),
           signalStrength,
@@ -319,6 +351,7 @@ module.exports = function Decoder(bytes) {
 
     if (decoded.sensorContent.containsExternalSensors) {
       const type = bytes[index++];
+
       switch(type) {
         case 0x0A:
           decoded.externalSensor = {
@@ -341,6 +374,24 @@ module.exports = function Decoder(bytes) {
             value: bytes[index++]
           };
           break;
+
+          case 0x66:
+            var iobuttonStateData = bytes[index++];
+            var iobuttonState = (iobuttonStateData & 0xF0)>>4;
+            var iobuttonStateClickCnt = (iobuttonStateData & 0x0F);
+            switch(iobuttonState){
+              case 0: iobuttonState = 'Idle'; break;
+              case 1: iobuttonState = 'Calling'; break;
+              case 2: iobuttonState = 'Success'; break;
+              case 3: iobuttonState = 'Cleared'; break;
+              default: iobuttonState = 'Undefined';
+            }
+            decoded.externalSensor = {
+                type: 'buttonState',
+                state: iobuttonState,
+                clickCnt: iobuttonStateClickCnt
+            };
+            break;
       }
     }
 
@@ -432,6 +483,10 @@ module.exports = function Decoder(bytes) {
         DirectionHistory: Math.round(bytes[index++] * (360/255)),
       };
     }
+
+    if (decoded.sensorContent.containsRetransmitCnt) {
+      decoded.retransmitCnt = bytes[index++];
+      };
   }
   if (decoded.containsGps) {
     decoded.gps = {};
