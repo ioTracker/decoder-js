@@ -9,7 +9,7 @@
  * @param bytes Buffer
  * @returns Object
  */
-module.exports = function Decoder(bytes) {
+function Decoder(bytes) {
   // Decoded result
   var decoded = {}; // Pointer/index within the byte stream
 
