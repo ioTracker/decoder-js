@@ -278,6 +278,7 @@ function Decoder(bytes) {
       decoded.sensorContent.containsAirPressure = !!(sensorContent2 & 4);
       decoded.sensorContent.containsManDown = !!(sensorContent2 & 8);
       decoded.sensorContent.containsTilt = !!(sensorContent2 & 16);
+      decoded.sensorContent.containsRetransmitCnt = !!(sensorContent2 & 32);
     }
 
     if (decoded.sensorContent.containsTemperature) {
@@ -374,6 +375,39 @@ function Decoder(bytes) {
           decoded.externalSensor = {
             type: 'detectSwitch',
             value: bytes[index++]
+          };
+          break;
+
+        case 0x66:
+          var iobuttonStateData = bytes[index++];
+          var iobuttonState = (iobuttonStateData & 0xF0) >> 4;
+          var iobuttonStateClickCnt = iobuttonStateData & 0x0F;
+
+          switch (iobuttonState) {
+            case 0:
+              iobuttonState = 'Idle';
+              break;
+
+            case 1:
+              iobuttonState = 'Calling';
+              break;
+
+            case 2:
+              iobuttonState = 'Success';
+              break;
+
+            case 3:
+              iobuttonState = 'Cleared';
+              break;
+
+            default:
+              iobuttonState = 'Undefined';
+          }
+
+          decoded.externalSensor = {
+            type: 'buttonState',
+            state: iobuttonState,
+            clickCnt: iobuttonStateClickCnt
           };
           break;
       }
@@ -484,23 +518,17 @@ function Decoder(bytes) {
       };
     }
 
+    if (decoded.sensorContent.containsRetransmitCnt) {
+      decoded.retransmitCnt = bytes[index++];
+    }
+    
   }
 
   if (decoded.containsGps) {
     decoded.gps = {};
     decoded.gps.navStat = bytes[index++];
-    decoded.gps.latitude = toSignedInteger(
-      bytes[index++],
-      bytes[index++],
-      bytes[index++],
-      bytes[index++]
-    ) / 10000000;
-    decoded.gps.longitude = toSignedInteger(
-      bytes[index++],
-      bytes[index++],
-      bytes[index++],
-      bytes[index++]
-    ) / 10000000;
+    decoded.gps.latitude = toSignedInteger(bytes[index++], bytes[index++], bytes[index++], bytes[index++]) / 10000000;
+    decoded.gps.longitude = toSignedInteger(bytes[index++], bytes[index++], bytes[index++], bytes[index++]) / 10000000;
     decoded.gps.altRef = toUnsignedShort(bytes[index++], bytes[index++]) / 10;
     decoded.gps.hAcc = bytes[index++];
     decoded.gps.vAcc = bytes[index++];
