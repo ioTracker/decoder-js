@@ -38,6 +38,11 @@ function Decoder(bytes) {
     return byte1 << 24 | byte2 << 16 | byte3 << 8 | byte4;
   }
 
+  function formatUuid(uuid) {
+    //XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+    return uuid.substring(0,8)+'-'+uuid.substring(8, 12)+'-'+uuid.substring(12,16)+'-'+uuid.substring(16,20)+'-'+uuid.substring(20);
+  }
+
   function bytesToHexString(bytes) {
     if (!bytes) {
       return null;
@@ -138,7 +143,7 @@ function Decoder(bytes) {
         beacon = {
           type: 'ibeacon',
           rssi: rssi,
-          uuid: substring(bytes, index, 16),
+          uuid: formatUuid(substring(bytes, index, 16)),
           major: substring(bytes, index + 16, 2),
           minor: substring(bytes, index + 18, 2)
         };
@@ -159,18 +164,7 @@ function Decoder(bytes) {
         beacon = {
           type: 'altbeacon',
           rssi: rssi,
-          id1: substring(bytes, index, 16),
-          id2: substring(bytes, index + 16, 2),
-          id3: substring(bytes, index + 18, 2)
-        };
-        index += 20;
-        return beacon;
-
-      case 0x03:
-        beacon = {
-          type: 'fullbeacon',
-          rssi: rssi,
-          id1: substring(bytes, index, 16),
+          id1: formatUuid(substring(bytes, index, 16)),
           id2: substring(bytes, index + 16, 2),
           id3: substring(bytes, index + 18, 2)
         };

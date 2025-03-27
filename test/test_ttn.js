@@ -325,7 +325,7 @@ describe('Decoder TTN', () => {
     const beacon0 = payload.bluetoothInfo.beacons[0];
     assert.equal('ibeacon', beacon0.type);
     assert.equal(-73, beacon0.rssi);
-    assert.equal('0066D726F52DDFB9D9888B51A8001005', beacon0.uuid.toUpperCase());
+    assert.equal('0066D726-F52D-DFB9-D988-8B51A8001005', beacon0.uuid.toUpperCase());
     assert.equal('031C', beacon0.major.toUpperCase());
     assert.equal('8AF8', beacon0.minor.toUpperCase());
 
@@ -344,7 +344,7 @@ describe('Decoder TTN', () => {
     const beacon0 = payload.bluetoothInfo.beacons[0];
     assert.equal('altbeacon', beacon0.type);
     assert.equal(-69, beacon0.rssi);
-    assert.equal('B98F6F32CA404CDB99046D500EF6834D', beacon0.id1.toUpperCase());
+    assert.equal('B98F6F32-CA40-4CDB-9904-6D500EF6834D', beacon0.id1.toUpperCase());
     assert.equal('0003', beacon0.id2.toUpperCase());
     assert.equal('0001', beacon0.id3.toUpperCase());
 
