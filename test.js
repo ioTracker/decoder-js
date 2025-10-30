@@ -7,4 +7,4 @@ function parse(hex) {
 }
 console.log(process.argv)
 const payload = parse(process.argv[2]);
-console.log(payload)
+console.dir(payload, { depth: null });
